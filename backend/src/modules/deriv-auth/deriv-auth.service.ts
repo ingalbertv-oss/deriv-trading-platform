@@ -46,7 +46,7 @@ export class DerivAuthService {
     });
 
     const params = new URLSearchParams({
-      app_id: config.deriv.appId,
+      client_id: config.deriv.appId,
       response_type: 'code',
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
