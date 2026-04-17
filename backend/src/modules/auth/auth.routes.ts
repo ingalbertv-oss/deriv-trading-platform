@@ -63,7 +63,7 @@ router.post('/register', authLimiter, async (req: Request, res: Response, next: 
     res.cookie('session_token', sessionToken, {
       httpOnly: true,
       secure: config.isProduction,
-      sameSite: config.isProduction ? 'strict' : 'lax',
+      sameSite: config.isProduction ? 'none' : 'lax',
       maxAge: config.session.maxAge,
       path: '/',
     });
@@ -121,7 +121,7 @@ router.post('/login', authLimiter, async (req: Request, res: Response, next: Nex
     res.cookie('session_token', sessionToken, {
       httpOnly: true,
       secure: config.isProduction,
-      sameSite: config.isProduction ? 'strict' : 'lax',
+      sameSite: config.isProduction ? 'none' : 'lax',
       maxAge: config.session.maxAge,
       path: '/',
     });
