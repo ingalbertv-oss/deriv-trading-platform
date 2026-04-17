@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  sessions          Session[]
+  derivConnections  DerivConnection[]
+  derivAccounts     DerivAccount[]
+  derivWsSessions   DerivWsSession[]
+  watchlists        Watchlist[]
+  transactionsCache AccountTransactionCache[]
+  auditLogs         AuditLog[]
+
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  sessionToken String   @unique @map("session_token")
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@map("sessions")
+}
+
+model DerivConnection {
+  id                    String    @id @default(uuid())
+  userId                String    @map("user_id")
+  provider              String    @default("deriv")
+  derivUserRef          String?   @map("deriv_user_ref")
+  accessTokenEncrypted  String    @map("access_token_encrypted")
+  refreshTokenEncrypted String?   @map("refresh_token_encrypted")
+  tokenExpiresAt        DateTime? @map("token_expires_at")
+  scope                 String?
+  isActive              Boolean   @default(true) @map("is_active")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accounts DerivAccount[]
+
+  @@index([userId])
+  @@map("deriv_connections")
+}
+
+model DerivAccount {
+  id                String  @id @default(uuid())
+  userId            String  @map("user_id")
+  derivConnectionId String  @map("deriv_connection_id")
+  derivAccountId    String  @map("deriv_account_id")
+  accountType       String  @map("account_type")
+  currency          String
+  groupName         String? @map("group_name")
+  isDefault         Boolean @default(false) @map("is_default")
+  isActive          Boolean @default(true) @map("is_active")
+  metadataJson      Json?   @map("metadata_json")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  derivConnection DerivConnection @relation(fields: [derivConnectionId], references: [id], onDelete: Cascade)
+  wsSessions      DerivWsSession[]
+  transactionsCache AccountTransactionCache[]
+
+  @@unique([userId, derivAccountId])
+  @@index([userId])
+  @@map("deriv_accounts")
+}
+
+model DerivWsSession {
+  id               String    @id @default(uuid())
+  userId           String    @map("user_id")
+  derivAccountId   String    @map("deriv_account_id")
+  status           String    @default("disconnected")
+  socketType       String    @default("trading") @map("socket_type")
+  connectedAt      DateTime? @map("connected_at")
+  disconnectedAt   DateTime? @map("disconnected_at")
+  lastPingAt       DateTime? @map("last_ping_at")
+  lastPongAt       DateTime? @map("last_pong_at")
+  reconnectCount   Int       @default(0) @map("reconnect_count")
+  metaJson         Json?     @map("meta_json")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  derivAccount DerivAccount @relation(fields: [derivAccountId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([derivAccountId])
+  @@map("deriv_ws_sessions")
+}
+
+model Watchlist {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  isDefault Boolean  @default(false) @map("is_default")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbols WatchlistSymbol[]
+
+  @@index([userId])
+  @@map("watchlists")
+}
+
+model WatchlistSymbol {
+  id          String   @id @default(uuid())
+  watchlistId String   @map("watchlist_id")
+  symbol      String
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  watchlist Watchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+
+  @@unique([watchlistId, symbol])
+  @@map("watchlist_symbols")
+}
+
+model MarketTickCache {
+  id        String   @id @default(uuid())
+  symbol    String
+  quote     Float
+  bid       Float?
+  ask       Float?
+  epoch     BigInt
+  rawJson   Json     @map("raw_json")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([symbol])
+  @@map("market_ticks_cache")
+}
+
+model MarketCandleCache {
+  id          String   @id @default(uuid())
+  symbol      String
+  granularity Int
+  epoch       BigInt
+  open        Float
+  high        Float
+  low         Float
+  close       Float
+  rawJson     Json     @map("raw_json")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([symbol, granularity])
+  @@map("market_candles_cache")
+}
+
+model AccountTransactionCache {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  derivAccountId String   @map("deriv_account_id")
+  referenceId    String?  @map("reference_id")
+  actionType     String?  @map("action_type")
+  amount         Float?
+  balanceAfter   Float?   @map("balance_after")
+  epoch          BigInt?
+  rawJson        Json     @map("raw_json")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  derivAccount DerivAccount @relation(fields: [derivAccountId], references: [id], onDelete: Cascade)
+
+  @@index([userId, derivAccountId])
+  @@map("account_transactions_cache")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  domain      String
+  action      String
+  level       String   @default("info")
+  message     String
+  contextJson Json?    @map("context_json")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([domain])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
