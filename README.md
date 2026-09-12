@@ -1,195 +1,127 @@
-# Deriv Pro · Trading Platform
+# Deriv Pro
 
-Full-stack trading platform with centralized Deriv API integration.
+Plataforma web full-stack para consultar mercados, administrar cuentas Deriv y operar contratos desde una integración centralizada en el backend.
 
-## Architecture
+> Estado documentado: 12 de septiembre de 2026. Describe lo encontrado en el repositorio; no implica que la integración con Deriv haya sido validada en producción.
 
-```
-┌─────────────────┐       ┌─────────────────────────────────────┐
-│                 │ REST  │              BACKEND                │
-│    FRONTEND     │──────▶│  Express + TypeScript + Prisma      │
-│  React + Vite   │       │                                     │
-│                 │◀──────│  Internal WS (/ws/app)              │
-│  localhost:5173 │  WS   │                                     │
-└─────────────────┘       │  ┌─────────────────────────────┐   │
-                          │  │ Deriv WS Service             │   │
-                          │  │ (OTP → authenticated socket) │   │
-                          │  └─────────┬───────────────────┘   │
-                          │            │                        │
-                          │            ▼                        │
-                          │  ┌─────────────────────────────┐   │
-                          │  │ Deriv WebSocket API          │   │
-                          │  │ (wss://api.derivws.com)      │   │
-                          │  └─────────────────────────────┘   │
-                          │                                     │
-                          │  ┌─────────────────────────────┐   │
-                          │  │ PostgreSQL + Prisma ORM      │   │
-                          │  └─────────────────────────────┘   │
-                          │  localhost:3001                      │
-                          └─────────────────────────────────────┘
+## Estado actual
+
+- Backend TypeScript compilando correctamente con `tsc`.
+- Frontend TypeScript/Vite compilando correctamente para producción.
+- Integración Deriv encapsulada en el backend mediante REST y WebSocket.
+- Autenticación local por sesión y flujo OAuth con PKCE para Deriv.
+- Persistencia PostgreSQL mediante Prisma.
+- El lint del backend no ejecuta porque falta configuración ESLint compatible con ESLint 10.
+- No hay suite de pruebas automatizadas: `backend npm test` es un placeholder.
+- OAuth, trading, WebSocket real y despliegue productivo requieren validación con credenciales y servicios disponibles.
+
+## Arquitectura
+
+```text
+React + Vite (frontend :5173)
+        │ REST / cookie de sesión
+        ▼
+Express + TypeScript (backend :3001)
+        ├── PostgreSQL + Prisma
+        ├── WebSocket interno: /ws/app
+        └── WebSocket Deriv: wss://ws.derivws.com/websockets/v3
 ```
 
-**Key principle**: The frontend NEVER connects directly to Deriv. All Deriv integration happens server-side.
+El frontend no se conecta directamente a Deriv. El backend gestiona OAuth, credenciales, conexiones Deriv y eventos internos.
 
-## Prerequisites
+## Funcionalidades disponibles
 
-- **Node.js** >= 18
-- **PostgreSQL** (via Laragon, Docker, or standalone)
-- **Deriv developer account** with registered OAuth app (https://api.deriv.com)
+### Frontend
 
-## Setup
+Rutas implementadas:
 
-### 1. Clone & Install
+- `/login`: registro, inicio y cierre de sesión.
+- `/dashboard`: resumen de cuenta, balance, portafolio y contratos abiertos; permite vender contratos.
+- `/accounts`: listado y selección de cuentas Deriv.
+- `/market`: búsqueda/listado de símbolos y datos de mercado.
+- `/market/:symbol`: detalle del símbolo y panel de propuesta/compra.
+- `/history`: historial de operaciones/transacciones.
+- `/settings/integrations`: estado y gestión de la integración OAuth con Deriv.
+
+Tecnologías: React, React Router, TanStack Query, Zustand, Axios, Recharts, Lucide React y react-hot-toast.
+
+### Backend
+
+Módulos implementados:
+
+- `auth`: registro, login, logout, sesión y usuario actual.
+- `deriv-auth`: OAuth con PKCE, `state` y callback.
+- `deriv-accounts`: cuentas Deriv y selección de cuenta activa.
+- `deriv-ws`: conexiones Deriv, reconexión y WebSocket interno.
+- `deriv-market`: símbolos activos, horarios, historial de ticks y suscripciones.
+- `deriv-account-data`: balance, portafolio, estado de cuenta, transacciones y profit table.
+- `deriv-trade`: proposal, buy, sell y suscripción de contrato abierto.
+- `watchlists`: CRUD de listas y símbolos.
+- `audit-logs`: servicio de registro de acciones.
+- `deriv-shared`: tipos, adaptador y normalización de respuestas Deriv.
+
+La API está montada bajo `/api`; el endpoint de salud es `GET /health`.
+
+## Modelo de datos
+
+Prisma define entidades para usuarios, sesiones, conexiones y cuentas Deriv, sesiones WebSocket, watchlists, caché de ticks/candles, transacciones y auditoría. El datasource configurado es PostgreSQL.
+
+## Requisitos
+
+- Node.js 18 o superior.
+- PostgreSQL.
+- Cuenta de desarrollador Deriv y aplicación OAuth registrada.
+
+## Instalación local
 
 ```bash
-# Backend
 cd backend
-cp .env.example .env
-# Edit .env with your values
 npm install
-
-# Frontend
-cd ../frontend
 cp .env.example .env
-npm install
-```
-
-### 2. Configure Environment
-
-Edit `backend/.env`:
-
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `SESSION_SECRET` | Random string, min 32 chars |
-| `ENCRYPTION_KEY` | 64 hex chars (32 bytes) for AES-256 |
-| `DERIV_APP_ID` | From Deriv Developer Dashboard |
-| `DERIV_CLIENT_ID` | OAuth Client ID from Deriv |
-| `OAUTH_REDIRECT_URI` | Must match Deriv app config |
-
-### 3. Database
-
-```bash
-cd backend
-
-# Create PostgreSQL database "deriv_platform"
-# Then run migrations:
-npm run db:push      # Push schema (dev)
-# OR
-npm run db:migrate   # Full migration (recommended)
-
-# Seed demo user
+# Completar las variables de backend/.env
+npm run db:generate
+npm run db:push
 npm run db:seed
+npm run dev
 ```
 
-### 4. Run
+En otra terminal:
 
 ```bash
-# Terminal 1 - Backend
-cd backend
-npm run dev
-
-# Terminal 2 - Frontend
 cd frontend
+npm install
+cp .env.example .env
+# Completar las variables de frontend/.env
 npm run dev
 ```
+
+URLs por defecto:
 
 - Frontend: http://localhost:5173
 - Backend: http://localhost:3001
-- Health: http://localhost:3001/health
+- Health check: http://localhost:3001/health
+- WebSocket interno: `ws://localhost:3001/ws/app`
 
-### 5. Demo Login
+El seed crea el usuario demo indicado en `backend/prisma/seed.ts`. No usar esas credenciales fuera de desarrollo.
 
-```
-Email: demo@deriv-platform.local
-Password: Demo1234!
-```
+## Variables de entorno
 
-## Modules
+Backend: `APP_ENV`, `APP_URL`, `FRONTEND_URL`, `BACKEND_PORT`, `DATABASE_URL`, `SESSION_SECRET`, `ENCRYPTION_KEY`, `DERIV_APP_ID`, `DERIV_CLIENT_ID`, `DERIV_CLIENT_SECRET`, `DERIV_AUTH_BASE_URL`, `DERIV_API_BASE_URL`, `DERIV_WS_PUBLIC_URL` y `OAUTH_REDIRECT_URI`.
 
-### Backend
-| Module | Description |
-|---|---|
-| `auth` | Login, register, sessions |
-| `deriv-auth` | OAuth PKCE flow |
-| `deriv-accounts` | Account management |
-| `deriv-ws` | WebSocket service + internal WS |
-| `deriv-market` | Active symbols, ticks, history |
-| `deriv-account-data` | Balance, portfolio, statement |
-| `watchlists` | User watchlists |
-| `audit-logs` | Action logging |
-| `deriv-shared` | Types, adapter, normalizers |
+Frontend: `VITE_API_URL` y `VITE_WS_URL`.
 
-### Frontend
-| Module | Description |
-|---|---|
-| `auth` | Login/Register/Callback |
-| `dashboard` | Main dashboard |
-| `deriv-accounts` | Account list |
-| `market` | Symbols, search, watchlist |
-| `history` | Transaction history |
-| `settings` | Integrations/OAuth |
+Los archivos `.env` locales no deben versionarse. Revisar especialmente cualquier `.env.production` antes de hacer commit o despliegue.
 
-## API Endpoints
+## Comandos
 
-### Auth
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `GET /api/auth/me`
-- `GET /api/auth/deriv/start`
-- `GET /api/auth/deriv/callback`
-- `GET /api/auth/deriv/status`
-- `GET /api/deriv/connections`
-- `DELETE /api/deriv/connections/:id`
+Backend: `npm run dev`, `npm run build`, `npm run start`, `npm run db:generate`, `npm run db:push`, `npm run db:migrate`, `npm run db:migrate:prod`, `npm run db:seed`, `npm run db:studio`, `npm run lint`.
 
-### Accounts
-- `GET /api/deriv/accounts`
-- `POST /api/deriv/accounts/:accountId/select`
-- `GET /api/deriv/accounts/active`
-- `POST /api/deriv/accounts/:accountId/ws/connect`
-- `POST /api/deriv/accounts/:accountId/ws/disconnect`
+Frontend: `npm run dev`, `npm run build`, `npm run preview`.
 
-### Market
-- `GET /api/deriv/market/active-symbols`
-- `GET /api/deriv/market/trading-times`
-- `GET /api/deriv/market/ticks-history`
-- `POST /api/deriv/market/subscribe`
-- `POST /api/deriv/market/unsubscribe`
+## Seguridad y pendientes conocidos
 
-### Account Data
-- `GET /api/deriv/account/balance`
-- `GET /api/deriv/account/portfolio`
-- `GET /api/deriv/account/statement`
-- `GET /api/deriv/account/transactions`
-- `GET /api/deriv/account/profit-table`
+La implementación incluye cookies HttpOnly, Helmet, CORS con credenciales, rate limiting, cifrado AES-256 de tokens, PKCE, validación de `state`, filtrado de datos sensibles en logs y separación de secretos del frontend.
 
-### Watchlists
-- `GET /api/watchlists`
-- `POST /api/watchlists`
-- `PATCH /api/watchlists/:id`
-- `DELETE /api/watchlists/:id`
-- `POST /api/watchlists/:id/symbols`
-- `DELETE /api/watchlists/:id/symbols/:symbol`
+Antes de producción se deben completar las pruebas de OAuth y WebSocket con Deriv, validar operaciones en cuenta demo, revisar expiración/refresco de tokens, configurar HTTPS/dominio, añadir pruebas automatizadas, corregir el lint y revisar el bundle frontend (el build actual emite un chunk minificado superior a 500 kB).
 
-### WebSocket
-- `ws://localhost:3001/ws/app?userId=xxx`
-
-## Security
-
-- ✅ HttpOnly + Secure + SameSite cookies
-- ✅ Tokens encrypted at rest (AES-256)
-- ✅ PKCE in OAuth flow
-- ✅ State validation
-- ✅ Rate limiting
-- ✅ Helmet headers
-- ✅ CORS whitelist
-- ✅ Sensitive data filtering in logs
-- ✅ No secrets in frontend
-
-## Pending (Requires Deriv Credentials)
-
-- [ ] Real OAuth flow test with live Deriv app_id
-- [ ] WebSocket subscription validation with real account
-- [ ] Token refresh logic (if Deriv provides refresh_token)
-- [ ] Production HTTPS + domain setup
+Para el plan de auditoría detallado, consultar [AUDIT_PLAN.md](AUDIT_PLAN.md).
