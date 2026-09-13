@@ -43,6 +43,7 @@ return [
         'api_base_url' => env('DERIV_API_BASE_URL', 'https://api.derivws.com'),
         'oauth_redirect_uri' => env('DERIV_OAUTH_REDIRECT_URI'),
         'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
+        'trading_enabled' => filter_var(env('DERIV_TRADING_ENABLED', false), FILTER_VALIDATE_BOOL),
     ],
 
 ];

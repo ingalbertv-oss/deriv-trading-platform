@@ -16,6 +16,7 @@ Backend Laravel paralelo para la migración de Deriv Pro. El backend Express ori
 - Worker WebSocket persistente disponible como `php artisan deriv:ws {accountId}`.
 - Reverb instalado y canal privado por usuario/cuenta preparado; React aún debe migrar su hook al cliente Echo.
 - Endpoints Laravel para mercado y datos de cuenta implementados mediante requests puntuales por WebSocket.
+- Endpoints de proposal, buy, sell y contrato abierto implementados; buy/sell permanecen bloqueados por `DERIV_TRADING_ENABLED=false`.
 - Aún no se han migrado todos los dominios de negocio ni datos productivos del backend Express.
 
 ## Configuración local
@@ -42,6 +43,8 @@ php artisan deriv:ws DOT90004580
 El worker solicita un OTP nuevo, conecta al WebSocket de Deriv, envía heartbeat y publica eventos en el canal privado `deriv.{userId}.account.{accountId}`. No activar `DERIV_TRADING_ENABLED` hasta completar las pruebas demo.
 
 Los endpoints de mercado/cuenta abren una conexión puntual con OTP, esperan la respuesta solicitada y cierran el socket; los streams en tiempo real continúan usando el worker.
+
+Los endpoints de trading usan la misma cuenta activa y no envían `loginid`. Proposal y consulta de contrato están disponibles para pruebas; las operaciones `buy` y `sell` responden `423` mientras el flag de trading esté desactivado.
 
 Para usar Laragon cuando PHP no esté en el `PATH`:
 

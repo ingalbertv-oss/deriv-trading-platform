@@ -5,6 +5,7 @@ use App\Http\Controllers\DerivAccountController;
 use App\Http\Controllers\DerivAccountDataController;
 use App\Http\Controllers\DerivMarketController;
 use App\Http\Controllers\DerivOAuthController;
+use App\Http\Controllers\DerivTradeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +52,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/statement', [DerivAccountDataController::class, 'statement']);
         Route::get('/transactions', [DerivAccountDataController::class, 'transactions']);
         Route::get('/profit-table', [DerivAccountDataController::class, 'profitTable']);
+    });
+
+    Route::prefix('deriv/trade')->group(function () {
+        Route::post('/proposal', [DerivTradeController::class, 'proposal']);
+        Route::post('/buy', [DerivTradeController::class, 'buy']);
+        Route::post('/sell', [DerivTradeController::class, 'sell']);
+        Route::post('/subscribe-position', [DerivTradeController::class, 'subscribePosition']);
     });
 
     Route::get('/user', fn (Request $request) => $request->user());
