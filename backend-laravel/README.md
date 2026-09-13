@@ -11,7 +11,9 @@ Backend Laravel paralelo para la migración de Deriv Pro. El backend Express ori
 - `.env.example` preparado para MySQL, Redis y API de Deriv.
 - Rutas disponibles: `GET /api/health`, `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` y `GET /api/user`.
 - Autenticación local implementada con Sanctum stateful y compatibilidad de hash PBKDF2 con el backend Express.
-- Aún no se han migrado OAuth Deriv, dominios de negocio ni datos productivos del backend Express.
+- OAuth 2.0 + PKCE de Deriv implementado con state/verifier en cache y tokens cifrados.
+- Rutas de conexiones Deriv disponibles; aún falta sincronizar cuentas y abrir WebSockets.
+- Aún no se han migrado todos los dominios de negocio ni datos productivos del backend Express.
 
 ## Configuración local
 

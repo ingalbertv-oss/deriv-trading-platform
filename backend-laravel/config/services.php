@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'deriv' => [
+        'client_id' => env('DERIV_CLIENT_ID'),
+        'app_id' => env('DERIV_APP_ID'),
+        'client_secret' => env('DERIV_CLIENT_SECRET'),
+        'auth_base_url' => env('DERIV_AUTH_BASE_URL', 'https://auth.deriv.com'),
+        'api_base_url' => env('DERIV_API_BASE_URL', 'https://api.derivws.com'),
+        'oauth_redirect_uri' => env('DERIV_OAUTH_REDIRECT_URI'),
+        'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
+    ],
+
 ];
