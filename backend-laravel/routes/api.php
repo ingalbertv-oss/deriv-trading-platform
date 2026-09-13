@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DerivAccountController;
 use App\Http\Controllers\DerivOAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,5 +29,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/deriv/connections', [DerivOAuthController::class, 'connections']);
     Route::delete('/deriv/connections/{id}', [DerivOAuthController::class, 'disconnect']);
+
+    Route::prefix('deriv/accounts')->group(function () {
+        Route::get('/', [DerivAccountController::class, 'index']);
+        Route::post('/sync', [DerivAccountController::class, 'sync']);
+        Route::get('/active', [DerivAccountController::class, 'active']);
+        Route::post('/{derivAccountId}/select', [DerivAccountController::class, 'select']);
+        Route::post('/{derivAccountId}/ws/connect', [DerivAccountController::class, 'connect']);
+    });
+
     Route::get('/user', fn (Request $request) => $request->user());
 });

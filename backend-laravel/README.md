@@ -12,7 +12,8 @@ Backend Laravel paralelo para la migración de Deriv Pro. El backend Express ori
 - Rutas disponibles: `GET /api/health`, `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` y `GET /api/user`.
 - Autenticación local implementada con Sanctum stateful y compatibilidad de hash PBKDF2 con el backend Express.
 - OAuth 2.0 + PKCE de Deriv implementado con state/verifier en cache y tokens cifrados.
-- Rutas de conexiones Deriv disponibles; aún falta sincronizar cuentas y abrir WebSockets.
+- Sincronización de cuentas Deriv y generación de OTP por cuenta implementadas.
+- El endpoint WebSocket devuelve el OTP/URL lista para el worker; el worker persistente y Reverb aún faltan.
 - Aún no se han migrado todos los dominios de negocio ni datos productivos del backend Express.
 
 ## Configuración local
@@ -35,4 +36,4 @@ Para usar Laragon cuando PHP no esté en el `PATH`:
 
 ## Siguientes pasos
 
-Seguir el plan en [../LARAVEL_MIGRATION_PLAN.md](../LARAVEL_MIGRATION_PLAN.md), comenzando por las migraciones MySQL y autenticación local antes de integrar OAuth y WebSockets de Deriv.
+Seguir el plan en [../LARAVEL_MIGRATION_PLAN.md](../LARAVEL_MIGRATION_PLAN.md), comenzando por el worker WebSocket y la integración de Reverb antes de habilitar operaciones.
