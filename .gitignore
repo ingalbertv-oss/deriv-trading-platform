@@ -3,5 +3,6 @@ dist/
 .env
 logs/
 *.log
+composer.phar
 .DS_Store
 Thumbs.db
