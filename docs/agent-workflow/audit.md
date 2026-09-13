@@ -29,3 +29,12 @@ Fecha: 2026-09-13. Estado Git: rama `main`, árbol limpio (`git status --short`)
 ## Alcance de esta preparación
 
 Se crea la guía raíz, documentación operativa, prompts y trazabilidad. No se modifican lógica de negocio, contratos API, esquemas, dependencias ni configuración global del cliente.
+
+## Reauditoría de fase siguiente
+
+- Se añadió `backend/eslint.config.mjs` compatible con ESLint 10 y `typescript-eslint`; `npm run lint` pasa.
+- `backend/tests/crypto.test.ts` cubre generación PKCE, vector RFC 7636, state y token; `npm test` pasa con 3 pruebas.
+- Se corrigió el descarte de causa en `backend/src/modules/deriv-ws/deriv-ws.service.ts` sin alterar el contrato.
+- `frontend/src/App.tsx` usa `lazy`/`Suspense`; el build se divide en chunks y ya no emite la advertencia del entry chunk >500 kB.
+- `npm audit fix` se ejecutó sin `--force`; quedan 4 vulnerabilidades reportadas. No se forzó el cambio de Prisma sugerido por npm.
+- `backend-laravel` respondió a `route:list --path=api` con 30 rutas y sus pruebas siguen en 2/2.

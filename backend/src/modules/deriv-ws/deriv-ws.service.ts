@@ -86,7 +86,7 @@ export class DerivWsService extends EventEmitter {
       wsUrl = otpResponse.data.url;
     } catch (error: any) {
       logger.error('Failed to get OTP', { error: error.message, derivAccountId });
-      throw new Error(`Failed to get WebSocket OTP: ${error.message}`);
+      throw new Error(`Failed to get WebSocket OTP: ${error.message}`, { cause: error });
     }
 
     // Create DB session record

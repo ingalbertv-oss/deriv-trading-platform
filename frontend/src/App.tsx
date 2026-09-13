@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -6,12 +6,13 @@ import { useAuthStore } from './shared/store/auth.store';
 import { AppLayout } from './shared/components/AppLayout';
 import { LoginPage } from './features/auth/LoginPage';
 import { DerivCallbackPage } from './features/auth/DerivCallbackPage';
-import { DashboardPage } from './features/dashboard/DashboardPage';
-import { AccountsPage } from './features/deriv-accounts/AccountsPage';
-import { MarketPage } from './features/market/MarketPage';
-import { SymbolDetailPage } from './features/market/SymbolDetailPage';
-import { HistoryPage } from './features/history/HistoryPage';
-import { SettingsIntegrationsPage } from './features/settings/SettingsIntegrationsPage';
+
+const DashboardPage = lazy(() => import('./features/dashboard/DashboardPage').then(({ DashboardPage }) => ({ default: DashboardPage })));
+const AccountsPage = lazy(() => import('./features/deriv-accounts/AccountsPage').then(({ AccountsPage }) => ({ default: AccountsPage })));
+const MarketPage = lazy(() => import('./features/market/MarketPage').then(({ MarketPage }) => ({ default: MarketPage })));
+const SymbolDetailPage = lazy(() => import('./features/market/SymbolDetailPage').then(({ SymbolDetailPage }) => ({ default: SymbolDetailPage })));
+const HistoryPage = lazy(() => import('./features/history/HistoryPage').then(({ HistoryPage }) => ({ default: HistoryPage })));
+const SettingsIntegrationsPage = lazy(() => import('./features/settings/SettingsIntegrationsPage').then(({ SettingsIntegrationsPage }) => ({ default: SettingsIntegrationsPage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,7 +60,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Routes>
+        <Suspense fallback={<div style={{ padding: '2rem', color: 'var(--text-muted)' }}>Loading...</div>}>
+          <Routes>
           {/* Public */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/deriv/callback" element={<DerivCallbackPage />} />
@@ -79,7 +81,8 @@ function App() {
           {/* Default */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
 
       <Toaster
