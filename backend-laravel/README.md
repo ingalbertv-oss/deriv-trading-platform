@@ -13,7 +13,8 @@ Backend Laravel paralelo para la migración de Deriv Pro. El backend Express ori
 - Autenticación local implementada con Sanctum stateful y compatibilidad de hash PBKDF2 con el backend Express.
 - OAuth 2.0 + PKCE de Deriv implementado con state/verifier en cache y tokens cifrados.
 - Sincronización de cuentas Deriv y generación de OTP por cuenta implementadas.
-- El endpoint WebSocket devuelve el OTP/URL lista para el worker; el worker persistente y Reverb aún faltan.
+- Worker WebSocket persistente disponible como `php artisan deriv:ws {accountId}`.
+- Reverb instalado y canal privado por usuario/cuenta preparado; React aún debe migrar su hook al cliente Echo.
 - Aún no se han migrado todos los dominios de negocio ni datos productivos del backend Express.
 
 ## Configuración local
@@ -27,6 +28,17 @@ php artisan serve --port=8001
 ```
 
 Antes del primer `migrate`, asegurar que `.env` tenga `DB_CONNECTION=mysql` y que exista la base `deriv_platform`.
+
+## Tiempo real
+
+En terminales separadas, con MySQL/Redis configurados:
+
+```powershell
+php artisan reverb:start
+php artisan deriv:ws DOT90004580
+```
+
+El worker solicita un OTP nuevo, conecta al WebSocket de Deriv, envía heartbeat y publica eventos en el canal privado `deriv.{userId}.account.{accountId}`. No activar `DERIV_TRADING_ENABLED` hasta completar las pruebas demo.
 
 Para usar Laragon cuando PHP no esté en el `PATH`:
 
