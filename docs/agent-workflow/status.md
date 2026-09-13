@@ -2,7 +2,7 @@
 
 Actualizado: 2026-09-13.
 
-Preparación inicial completada. En esta fase se configuró ESLint flat para TypeScript, se sustituyó el test placeholder por pruebas Node nativas de PKCE, se conservó el contexto de errores del WebSocket y se dividieron las páginas protegidas del frontend mediante carga diferida.
+Preparación inicial completada. En esta fase se configuró ESLint flat para TypeScript, se sustituyó el test placeholder por pruebas Node nativas de PKCE, se conservó el contexto de errores del WebSocket, se dividieron las páginas protegidas del frontend mediante carga diferida y se añadió trazabilidad de requests entre frontend y Laravel.
 
 Verificado: lint, build y 3 pruebas backend; build frontend sin warning de chunk inicial >500 kB; rutas y 2 pruebas Laravel. `npm audit fix` redujo vulnerabilidades de producción, pero quedan 4 avisos; uno requiere `--force` y cambio incompatible de Prisma.
 
