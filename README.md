@@ -125,3 +125,7 @@ La implementación incluye cookies HttpOnly, Helmet, CORS con credenciales, rate
 Antes de producción se deben completar las pruebas de OAuth y WebSocket con Deriv, validar operaciones en cuenta demo, revisar expiración/refresco de tokens, configurar HTTPS/dominio, añadir pruebas automatizadas, corregir el lint y revisar el bundle frontend (el build actual emite un chunk minificado superior a 500 kB).
 
 Para el plan de auditoría detallado, consultar [AUDIT_PLAN.md](AUDIT_PLAN.md).
+
+La investigación de compatibilidad con la API vigente de Deriv está en [DERIV_API_RESEARCH.md](DERIV_API_RESEARCH.md).
+
+El plan de mejora e integración está en [IMPROVEMENT_INTEGRATION_PLAN.md](IMPROVEMENT_INTEGRATION_PLAN.md).
