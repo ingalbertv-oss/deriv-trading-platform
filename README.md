@@ -129,3 +129,5 @@ Para el plan de auditoría detallado, consultar [AUDIT_PLAN.md](AUDIT_PLAN.md).
 La investigación de compatibilidad con la API vigente de Deriv está en [DERIV_API_RESEARCH.md](DERIV_API_RESEARCH.md).
 
 El plan de mejora e integración está en [IMPROVEMENT_INTEGRATION_PLAN.md](IMPROVEMENT_INTEGRATION_PLAN.md).
+
+El plan de migración a Laravel, MySQL y React está en [LARAVEL_MIGRATION_PLAN.md](LARAVEL_MIGRATION_PLAN.md).
