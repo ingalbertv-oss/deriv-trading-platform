@@ -9,8 +9,9 @@ Backend Laravel paralelo para la migración de Deriv Pro. El backend Express ori
 - Reverb instalado y broadcasting preparado.
 - Predis instalado para Redis.
 - `.env.example` preparado para MySQL, Redis y API de Deriv.
-- Rutas iniciales disponibles: `GET /api/health`, `GET /api/auth/me` y `GET /api/user`.
-- Aún no se han migrado los dominios de negocio, modelos ni datos del backend Express.
+- Rutas disponibles: `GET /api/health`, `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` y `GET /api/user`.
+- Autenticación local implementada con Sanctum stateful y compatibilidad de hash PBKDF2 con el backend Express.
+- Aún no se han migrado OAuth Deriv, dominios de negocio ni datos productivos del backend Express.
 
 ## Configuración local
 
@@ -21,6 +22,8 @@ php artisan key:generate
 php artisan migrate
 php artisan serve --port=8001
 ```
+
+Antes del primer `migrate`, asegurar que `.env` tenga `DB_CONNECTION=mysql` y que exista la base `deriv_platform`.
 
 Para usar Laragon cuando PHP no esté en el `PATH`:
 
