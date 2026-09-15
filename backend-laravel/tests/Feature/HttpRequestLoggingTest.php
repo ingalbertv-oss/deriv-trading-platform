@@ -13,6 +13,13 @@ class HttpRequestLoggingTest extends TestCase
         $response->assertOk()->assertHeader('X-Request-Id');
     }
 
+    public function test_health_reports_service_statuses(): void
+    {
+        $this->getJson('/api/health')
+            ->assertOk()
+            ->assertJsonStructure(['status', 'services' => ['database', 'redis', 'deriv'], 'timestamp']);
+    }
+
     public function test_valid_request_id_is_preserved_for_correlation(): void
     {
         $requestId = 'frontend-test-request-123';

@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\AuditGptRequests;
 use App\Http\Middleware\LogHttpRequests;
+use App\Http\Middleware\ValidateGptApiKey;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
         $middleware->appendToGroup('api', [LogHttpRequests::class]);
+        $middleware->alias(['auth.gpt' => ValidateGptApiKey::class, 'audit.gpt' => AuditGptRequests::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

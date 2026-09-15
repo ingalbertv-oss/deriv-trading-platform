@@ -46,4 +46,8 @@ return [
         'trading_enabled' => filter_var(env('DERIV_TRADING_ENABLED', false), FILTER_VALIDATE_BOOL),
     ],
 
+    'gpt' => [
+        'api_key' => env('GPT_API_KEY'),
+    ],
+
 ];

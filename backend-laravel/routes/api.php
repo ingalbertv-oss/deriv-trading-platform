@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Gpt\AccountController as GptAccountController;
+use App\Http\Controllers\Api\Gpt\AnalysisContextController;
+use App\Http\Controllers\Api\Gpt\MarketController as GptMarketController;
+use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DerivAccountController;
 use App\Http\Controllers\DerivAccountDataController;
@@ -9,9 +13,18 @@ use App\Http\Controllers\DerivTradeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/health', fn () => response()->json([
-    'status' => 'ok', 'service' => 'deriv-laravel-api', 'timestamp' => now()->toISOString(),
-]));
+Route::get('/health', HealthController::class);
+
+Route::prefix('v1/gpt')->middleware(['auth.gpt', 'throttle:60,1', 'audit.gpt'])->group(function () {
+    Route::get('/instruments', [GptMarketController::class, 'instruments']);
+    Route::get('/market-context/{symbol}', [GptMarketController::class, 'context']);
+    Route::get('/technical-snapshot/{symbol}', [GptMarketController::class, 'technicalSnapshot']);
+    Route::get('/analysis-context/{symbol}', [AnalysisContextController::class, 'show']);
+    Route::get('/candles/{symbol}/{timeframe}', [GptMarketController::class, 'candles']);
+    Route::get('/ticks/{symbol}', [GptMarketController::class, 'ticks']);
+    Route::get('/account/summary', [GptAccountController::class, 'summary']);
+    Route::get('/account/positions', [GptAccountController::class, 'positions']);
+});
 
 Route::prefix('auth')->middleware('throttle:auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);

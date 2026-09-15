@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Services\Market\AccountDataProvider;
+use App\Services\Market\DerivAccountDataProvider;
+use App\Services\Market\DerivMarketDataProvider;
+use App\Services\Market\MarketDataProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -14,7 +18,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(MarketDataProvider::class, DerivMarketDataProvider::class);
+        $this->app->bind(AccountDataProvider::class, DerivAccountDataProvider::class);
     }
 
     /**
