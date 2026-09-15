@@ -8,8 +8,10 @@ import { config } from '../../shared/config';
 import { AuditService } from '../audit-logs/audit.service';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { GoogleAuthService } from './google-auth.service';
 
 const router = Router();
+const GOOGLE_NONCE_COOKIE = 'google_nonce';
 
 function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString('hex');
@@ -141,6 +143,54 @@ router.post('/login', authLimiter, async (req: Request, res: Response, next: Nex
         email: user.email,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /api/auth/google/challenge
+ * The nonce is returned to GIS while the signed copy remains HttpOnly.
+ */
+router.get('/google/challenge', authLimiter, (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const challenge = GoogleAuthService.challenge();
+    res.cookie(GOOGLE_NONCE_COOKIE, `${challenge.nonce}.${challenge.signature}`, {
+      httpOnly: true,
+      secure: config.isProduction,
+      sameSite: 'lax',
+      maxAge: 10 * 60 * 1000,
+      path: '/api/auth/google',
+    });
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({ success: true, data: { nonce: challenge.nonce } });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/auth/google
+ */
+router.post('/google', authLimiter, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const schema = z.object({ credential: z.string().min(1).max(8192) });
+    const { credential } = schema.parse(req.body);
+    const challenge = req.cookies?.[GOOGLE_NONCE_COOKIE]?.split('.') || [];
+    res.clearCookie(GOOGLE_NONCE_COOKIE, { path: '/api/auth/google' });
+    const result = await GoogleAuthService.login(credential, challenge[0] || '', challenge.slice(1).join('.') || '');
+    const sessionToken = generateSessionToken();
+    const expiresAt = new Date(Date.now() + config.session.maxAge);
+    await prisma.session.create({ data: { userId: result.user.id, sessionToken, expiresAt } });
+    res.cookie('session_token', sessionToken, {
+      httpOnly: true,
+      secure: config.isProduction,
+      sameSite: config.isProduction ? 'none' : 'lax',
+      maxAge: config.session.maxAge,
+      path: '/',
+    });
+    await AuditService.log({ userId: result.user.id, domain: 'auth', action: 'google_login', message: 'User logged in with Google', context: { created: result.created } });
+    res.json({ success: true, data: { id: result.user.id, name: result.user.name, email: result.user.email } });
   } catch (error) {
     next(error);
   }

@@ -20,6 +20,11 @@ export const config = {
     key: process.env.ENCRYPTION_KEY || '',
   },
 
+  google: {
+    enabled: process.env.GOOGLE_AUTH_ENABLED === 'true',
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+  },
+
   deriv: {
     appId: process.env.DERIV_APP_ID || '',
     clientId: process.env.DERIV_CLIENT_ID || '',

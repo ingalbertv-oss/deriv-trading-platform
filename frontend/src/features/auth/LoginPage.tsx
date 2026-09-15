@@ -4,6 +4,7 @@ import { useAuthStore } from '../../shared/store/auth.store';
 import toast from 'react-hot-toast';
 import { BarChart3, Mail, Lock, User } from 'lucide-react';
 import './LoginPage.css';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 export function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
@@ -11,7 +12,7 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, register } = useAuthStore();
+  const { login, register, loginWithGoogle } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -108,6 +109,19 @@ export function LoginPage() {
             {loading ? 'Processing...' : isRegister ? 'Create Account' : 'Sign In'}
           </button>
         </form>
+
+        <GoogleSignInButton onCredential={async (credential) => {
+          setLoading(true);
+          try {
+            await loginWithGoogle(credential);
+            toast.success('Welcome back!');
+            navigate('/dashboard');
+          } catch (err: any) {
+            toast.error(err.response?.data?.error?.message || 'Google authentication failed');
+          } finally {
+            setLoading(false);
+          }
+        }} disabled={loading} />
 
         <div className="login-toggle">
           <span>{isRegister ? 'Already have an account?' : "Don't have an account?"}</span>

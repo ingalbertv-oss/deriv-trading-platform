@@ -16,6 +16,7 @@ model User {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   sessions          Session[]
+  externalIdentities ExternalIdentity[]
   derivConnections  DerivConnection[]
   derivAccounts     DerivAccount[]
   derivWsSessions   DerivWsSession[]
@@ -24,6 +25,23 @@ model User {
   auditLogs         AuditLog[]
 
   @@map("users")
+}
+
+model ExternalIdentity {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  provider     String
+  providerId   String   @map("provider_id")
+  providerEmail String? @map("provider_email")
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@index([userId])
+  @@map("external_identities")
 }
 
 model Session {
